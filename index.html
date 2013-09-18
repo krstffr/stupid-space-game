@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<style>
+
+			#animated {
+				position: absolute;
+				left: 50px;
+			}
+
+		</style>
+	</head>
+	<body>
+		
+		<div id="animated">
+			hi!
+		</div>
+
+	</body>
+	<script>
+
+		var framerate = 60,
+			framerateInMSecs = 1000/framerate,
+			animatedDiv = $('#animated'),
+			updater,
+			mouseY = 0,
+			mouseX,
+			newPos = { top: 0};
+
+		$(document).bind('mousemove', function(e) {
+			mouseY = e.pageY;
+		});
+
+		updater = setInterval(function() {
+
+			newPos.top = newPos.top + 0.05;
+
+			$(animatedDiv).css({top: (( (Math.cos(newPos.top)*(mouseY/10) ) )  + 150 + (mouseY*4) / 20) });
+
+		}, framerateInMSecs);
+
+	</script>
+
+</html>
