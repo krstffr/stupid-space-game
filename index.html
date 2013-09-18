@@ -5,42 +5,192 @@
 		<title></title>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<style>
+			
+			body {
+				background: #000;
+			}
 
-			#animated {
+			#follower{
+			  position : absolute;
+			  background-color : #cff;
+			  color : #000;
+			  padding : 10px;
+			}
+
+			.shot {
+				background: #f00;
+			}
+
+			#rocket-count {
+				background: #f00;
+			}
+
+			.enemy {
 				position: absolute;
-				left: 50px;
+				background: #0f0;
+				right: 5%;
+				top: 50%;
 			}
 
 		</style>
 	</head>
 	<body>
 		
-		<div id="animated">
-			hi!
+		<div id="follower">
+			SPACESHIP<br />
+			rockets: <span id="rocket-count">1</span>
 		</div>
 
 	</body>
 	<script>
 
 		var framerate = 60,
+			delay = 250,
 			framerateInMSecs = 1000/framerate,
-			animatedDiv = $('#animated'),
+			playField = $('body'),
 			updater,
+			newTopPos,
 			mouseY = 0,
-			mouseX,
-			newPos = { top: 0};
+			mouseX = 0,
+			newTopCosNum = 0,
+			newLeftCosNum = 0,
+			enemyCosNum = 0,
+			newPos = { top: 0},
+			xp = 0, 
+			yp = 0,
+			spaceShip,
+			shotSpeed = 1,
+			leftEdge = $(document).width()-100,
+			rocketTopSpeed = 25,
+			enemies = [];
 
-		$(document).bind('mousemove', function(e) {
-			mouseY = e.pageY;
+		function Enemy () {
+
+			var that = this;
+
+			this.el = $('<div>').addClass('enemy').text('enemy!');
+			this.enemyId = 0;
+			this.newPos = { top: 0, left: 0};
+
+			this.kill = function() {
+				this.el.fadeOut(250);
+			};
+
+			this.moveTowardsSpaceship = function() {
+				this.newPos.top = parseInt(this.elItWantsToDestroy().css('top'));
+				this.newPos.left += 1;
+				this.newPos.top = this.newPos.top + ( Math.cos(enemyCosNum) * 150 )
+				this.el.css({top: this.newPos.top, right: this.newPos.left + 1});
+			};
+
+			this.hitBox = function() {
+				var hitBox = { pos: this.el.offset(), size: { width: this.el.width(), height: this.el.height() } };
+				return hitBox;
+			};
+
+			this.elItWantsToDestroy = function() {
+				if (typeof spaceShip !== 'undefined')
+				return spaceShip.el;
+			};
+
+			this.create = function() {
+				var enemyEl = this.el,
+					enemyId = 'enemy-'+enemies.length;
+
+				enemyEl.attr('id', enemyId);
+				this.enemyId = enemyId;
+
+				playField.append(this.el);
+			};
+
+			this.init = function() {
+				this.create();
+			};
+
+			this.init();
+			
+		};
+
+		// enemies.push( new Enemy() );
+
+		// var enemy = new Enemy();
+
+
+		var spaceShip = {
+			getCurrPos: function() {
+				var topPos = $('#rocket-count').offset().top,
+					leftPos = $('#rocket-count').offset().left;
+				return { top: topPos, left: leftPos };
+			},
+			shoot: function() {
+				if (this.shotExists()) return false;
+				var currPos = this.getCurrPos(),
+					newDiv = $('<div class="shot">').css({position: 'absolute'}).text('ROCKET').css(currPos);
+
+				playField.append(newDiv);
+
+				this.el.find('#rocket-count').text('0');
+
+			},
+			shotHitBox: function() {
+				var shot = $('.shot'),
+					shotHitBox = { pos: shot.offset(), size: { width: shot.width(), height: shot.height() } };
+				return shotHitBox;
+			},
+			shotExists: function() {
+				return $('.shot').length > 0;
+			},
+			destroyShot: function() {
+				$('.shot').remove();
+				this.shotLeftPos = false;
+				this.shotSpeed = shotSpeed;
+				this.el.find('#rocket-count').text('1');
+			},
+			getCurrentShot: function() {
+				return $('.shot');
+			},
+			el: $("#follower"),
+			shotLeftPos: false,
+			shotSpeed: shotSpeed
+		};
+
+		$(document).on('mousemove', function(e){
+		   mouseX = e.pageX;
+		   mouseY = e.pageY; 
+		}).on('click', function(e) {
+			spaceShip.shoot();
 		});
 
-		updater = setInterval(function() {
+		var loop = setInterval(function(){
 
-			newPos.top = newPos.top + 0.05;
+			if (enemies.length > 0) enemies[0].moveTowardsSpaceship();
 
-			$(animatedDiv).css({top: (( (Math.cos(newPos.top)*(mouseY/10) ) )  + 150 + (mouseY*4) / 20) });
+		    // change 12 to alter damping higher is slower
+		    xp += ((mouseX/5) - xp) / delay;
+		    yp += (mouseY - yp) / delay;
 
+		    newTopCosNum = newTopCosNum+0.03;
+		    newLeftCosNum = newLeftCosNum+0.012;
+		    enemyCosNum = enemyCosNum+0.02;
+
+		    newTopPos = yp + ( Math.cos(newTopCosNum) * 50 );
+		    newLeftPos = xp + ( Math.cos(newLeftCosNum) * 30 );
+
+		    if (spaceShip.shotExists()) {
+		    	if (!spaceShip.shotLeftPos) spaceShip.shotLeftPos = parseInt( spaceShip.getCurrentShot().css('left') );
+		    	spaceShip.shotLeftPos += spaceShip.shotSpeed;
+		    	if (spaceShip.shotSpeed < rocketTopSpeed) spaceShip.shotSpeed *= 1.05;
+		    	// if (spaceShip.shotHitBox().pos.left + spaceShip.shotHitBox().size.width > enemies[0].hitBox().pos.left && spaceShip.shotHitBox().pos.top + spaceShip.shotHitBox().size.height > enemies[0].hitBox().pos.top && spaceShip.shotHitBox().pos.top < enemies[0].hitBox().pos.top + enemies[0].hitBox().size.height) {
+		    	// 	spaceShip.destroyShot(); enemies[0].kill();
+		    	// }
+		    	if (spaceShip.shotLeftPos > leftEdge) spaceShip.destroyShot();
+		    	spaceShip.getCurrentShot().css({left: spaceShip.shotLeftPos});
+		    }
+
+		    spaceShip.el.css({ left: Math.floor(newLeftPos), top: Math.floor(newTopPos) });
+		    
 		}, framerateInMSecs);
+
 
 	</script>
 
