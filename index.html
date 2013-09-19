@@ -37,7 +37,8 @@
 		
 		<div id="follower">
 			SPACESHIP<br />
-			rockets: <span id="rocket-count">1</span>
+			rockets: <span id="rocket-count">1</span><br />
+			killz: <span id="kill-count">0</span><br />
 		</div>
 
 	</body>
@@ -62,7 +63,8 @@
 			playFieldHeight = $(document).height()-30;
 			rocketTopSpeed = 25,
 			enemies = {},
-			uniqueEnemyCounter = 0;
+			uniqueEnemyCounter = 0,
+			enemyGeneratorChecker = 0.9;
 
 		function Enemy () {
 
@@ -93,6 +95,23 @@
 			this.hitBox = function() {
 				var hitBox = { pos: this.el.offset(), size: { width: this.el.width(), height: this.el.height() } };
 				return hitBox;
+			};
+
+			this.checkIfHitByRocket = function() {
+				if (spaceShip.shotExists()) {
+			    	if (spaceShip.shotHitBox().pos.left + spaceShip.shotHitBox().size.width > this.hitBox().pos.left && spaceShip.shotHitBox().pos.top + spaceShip.shotHitBox().size.height > this.hitBox().pos.top && spaceShip.shotHitBox().pos.top < this.hitBox().pos.top + this.hitBox().size.height) {
+			    		spaceShip.destroyShot(); 
+			    		this.kill();
+			    		spaceShip.addKill();
+			    	}
+				}
+			};
+
+			this.checkIfHitPlayer = function() {
+		    	if (spaceShip.hitBox().pos.left + spaceShip.hitBox().size.width > this.hitBox().pos.left && spaceShip.hitBox().pos.top + spaceShip.hitBox().size.height > this.hitBox().pos.top && spaceShip.hitBox().pos.top < this.hitBox().pos.top + this.hitBox().size.height) {
+		    		spaceShip.kill();
+		    		this.kill();
+		    	}
 			};
 
 			this.elItWantsToDestroy = function() {
@@ -127,6 +146,42 @@
 		};
 
 		var spaceShip = {
+			el: $("#follower"),
+			shotLeftPos: false,
+			shotSpeed: shotSpeed,
+			kills: 0,
+			kill: function() {
+				this.el.fadeOut(250).remove();
+				var test = alert('You suck! But you did kill '+this.kills+' alien enemies.');
+				window.location = 'index.html';
+			},
+			addKill: function() {
+				this.kills += 1;
+				$('#kill-count').text(this.kills);
+			},
+			move: function() {
+				xp += ((mouseX/5) - xp) / delay;
+			    yp += (mouseY - yp) / delay;
+
+			    newTopCosNum = newTopCosNum+0.03;
+			    newLeftCosNum = newLeftCosNum+0.012;
+
+			    newTopPos = yp + ( Math.cos(newTopCosNum) * 50 );
+			    newLeftPos = xp + ( Math.cos(newLeftCosNum) * 30 );
+
+			    this.el.css({ left: Math.floor(newLeftPos), top: Math.floor(newTopPos) });
+			},
+			moveRockets: function() {
+
+			    if (this.shotExists()) {
+			    	if (!this.shotLeftPos) this.shotLeftPos = parseInt( this.getCurrentShot().css('left') );
+			    	this.shotLeftPos += this.shotSpeed;
+			    	if (this.shotSpeed < rocketTopSpeed) this.shotSpeed *= 1.05;
+			    	if (this.shotLeftPos > leftEdge) this.destroyShot();
+			    	this.getCurrentShot().css({left: this.shotLeftPos});
+			    }
+
+			},
 			getCurrPos: function() {
 				var topPos = $('#rocket-count').offset().top,
 					leftPos = $('#rocket-count').offset().left;
@@ -147,6 +202,10 @@
 					shotHitBox = { pos: shot.offset(), size: { width: shot.width(), height: shot.height() } };
 				return shotHitBox;
 			},
+			hitBox: function() {
+				var hitBox = { pos: this.el.offset(), size: { width: this.el.width(), height: this.el.height() } };
+				return hitBox;
+			},
 			shotExists: function() {
 				return $('.shot').length > 0;
 			},
@@ -158,10 +217,7 @@
 			},
 			getCurrentShot: function() {
 				return $('.shot');
-			},
-			el: $("#follower"),
-			shotLeftPos: false,
-			shotSpeed: shotSpeed
+			}
 		};
 
 		$(document).on('mousemove', function(e){
@@ -176,42 +232,34 @@
 		        	enemies[uniqueEnemyCounter] = new Enemy();
 		        	// enemies.push( new Enemy() );
 		            break;
-		        case 3:
-		            break;
-		        default:
-		            alert('You have a strange mouse');
 		    }
 		});
+
+		var enemyGenerator = setInterval(function() {
+			var checkAgainst = Math.random();
+			if (checkAgainst > enemyGeneratorChecker) enemies[uniqueEnemyCounter] = new Enemy();
+			enemyGeneratorChecker = enemyGeneratorChecker*0.99;
+		}, 1000);
 
 		var loop = setInterval(function(){
 
 			if (!_(enemies).isEmpty()) {
 				_(enemies).each( function( enemy, key, enemies ) {
+					// Move enemies
 					enemy.moveTowardsSpaceship();
+					// Check if hit by rockets
+					enemy.checkIfHitByRocket();
+					// Check if hit by player
+					enemy.checkIfHitPlayer();
 				});
 			}
 
-		    xp += ((mouseX/5) - xp) / delay;
-		    yp += (mouseY - yp) / delay;
+			// Move spaceship
+		    spaceShip.move();
 
-		    newTopCosNum = newTopCosNum+0.03;
-		    newLeftCosNum = newLeftCosNum+0.012;
+		    // Move rockets if exists
+		    spaceShip.moveRockets();
 
-		    newTopPos = yp + ( Math.cos(newTopCosNum) * 50 );
-		    newLeftPos = xp + ( Math.cos(newLeftCosNum) * 30 );
-
-		    if (spaceShip.shotExists()) {
-		    	if (!spaceShip.shotLeftPos) spaceShip.shotLeftPos = parseInt( spaceShip.getCurrentShot().css('left') );
-		    	spaceShip.shotLeftPos += spaceShip.shotSpeed;
-		    	if (spaceShip.shotSpeed < rocketTopSpeed) spaceShip.shotSpeed *= 1.05;
-		    	// if (spaceShip.shotHitBox().pos.left + spaceShip.shotHitBox().size.width > enemies[0].hitBox().pos.left && spaceShip.shotHitBox().pos.top + spaceShip.shotHitBox().size.height > enemies[0].hitBox().pos.top && spaceShip.shotHitBox().pos.top < enemies[0].hitBox().pos.top + enemies[0].hitBox().size.height) {
-		    	// 	spaceShip.destroyShot(); enemies[0].kill();
-		    	// }
-		    	if (spaceShip.shotLeftPos > leftEdge) spaceShip.destroyShot();
-		    	spaceShip.getCurrentShot().css({left: spaceShip.shotLeftPos});
-		    }
-
-		    spaceShip.el.css({ left: Math.floor(newLeftPos), top: Math.floor(newTopPos) });
 		    
 		}, framerateInMSecs);
 
