@@ -62,7 +62,8 @@
 			leftEdge = $(document).width()-100,
 			playFieldHeight = $(document).height()-30;
 			rocketTopSpeed = 25,
-			enemies = [];
+			enemies = [],
+			uniqueEnemyCounter = 0;
 
 		function Enemy () {
 
@@ -76,8 +77,14 @@
 			this.randLeftMoveSpeed = Math.floor( Math.random()*3 )+1;
 
 			this.kill = function() {
+				console.log('killed '+this.enemyId);
+				delete enemies[this.enemyId];
+				enemies = _.compact(enemies);
+				console.log(enemies);
+				// THIS DON'T WORK!!!
 				this.el.fadeOut(250).remove();
 				// REMOVE FROM ARRAY! OR IT JUST KEEPS GROWING! = more cpu
+				// OK???
 			};
 
 			this.moveTowardsSpaceship = function() {
@@ -102,14 +109,15 @@
 
 			this.createStartPos = function() {
 				var topPos = Math.floor( Math.random()*playFieldHeight );
-				console.log(topPos);
 				return { top: topPos, right: '5%' };
 			};
 
 			this.create = function() {
-				var enemyId = 'enemy-'+enemies.length;
+				var enemyId = uniqueEnemyCounter;
 
-				this.el.attr('id', enemyId);
+				uniqueEnemyCounter++;
+
+				this.el.attr('id', 'enemy-'+enemyId);
 				this.enemyId = enemyId;
 				this.el.css( this.createStartPos() );
 
@@ -171,7 +179,7 @@
 
 		var enemyLoop = setInterval(function() {
 			enemies.push( new Enemy() );
-		}, 1000);
+		}, 500);
 
 		var loop = setInterval(function(){
 
