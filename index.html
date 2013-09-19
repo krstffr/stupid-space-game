@@ -4,6 +4,7 @@
 		<meta charset="utf-8" />
 		<title></title>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="underscore-min.js"></script>
 		<style>
 			
 			body {
@@ -28,8 +29,6 @@
 			.enemy {
 				position: absolute;
 				background: #0f0;
-				right: 5%;
-				top: 50%;
 			}
 
 		</style>
@@ -61,6 +60,7 @@
 			spaceShip,
 			shotSpeed = 1,
 			leftEdge = $(document).width()-100,
+			playFieldHeight = $(document).height()-30;
 			rocketTopSpeed = 25,
 			enemies = [];
 
@@ -71,16 +71,23 @@
 			this.el = $('<div>').addClass('enemy').text('enemy!');
 			this.enemyId = 0;
 			this.newPos = { top: 0, left: 0};
+			this.randCosNum = Math.floor(Math.random()*10) / 100;
+			this.randCosMultiplier = Math.floor(Math.random()*2)+1;
+			this.randLeftMoveSpeed = Math.floor( Math.random()*3 )+1;
 
 			this.kill = function() {
-				this.el.fadeOut(250);
+				this.el.fadeOut(250).remove();
+				// REMOVE FROM ARRAY! OR IT JUST KEEPS GROWING! = more cpu
 			};
 
 			this.moveTowardsSpaceship = function() {
-				this.newPos.top = parseInt(this.elItWantsToDestroy().css('top'));
-				this.newPos.left += 1;
-				this.newPos.top = this.newPos.top + ( Math.cos(enemyCosNum) * 150 )
+				// this.newPos.top = parseInt(this.elItWantsToDestroy().css('top'));
+				this.randCosNum += 0.02;
+				this.newPos.left += this.randLeftMoveSpeed;
+				this.newPos.top += (parseInt(this.elItWantsToDestroy().css('top')) - this.newPos.top) / delay;
+				this.newPos.top = this.newPos.top + ( Math.cos(this.randCosNum) * this.randCosMultiplier );
 				this.el.css({top: this.newPos.top, right: this.newPos.left + 1});
+				if (this.newPos.left > leftEdge) this.kill();
 			};
 
 			this.hitBox = function() {
@@ -93,12 +100,18 @@
 				return spaceShip.el;
 			};
 
-			this.create = function() {
-				var enemyEl = this.el,
-					enemyId = 'enemy-'+enemies.length;
+			this.createStartPos = function() {
+				var topPos = Math.floor( Math.random()*playFieldHeight );
+				console.log(topPos);
+				return { top: topPos, right: '5%' };
+			};
 
-				enemyEl.attr('id', enemyId);
+			this.create = function() {
+				var enemyId = 'enemy-'+enemies.length;
+
+				this.el.attr('id', enemyId);
 				this.enemyId = enemyId;
+				this.el.css( this.createStartPos() );
 
 				playField.append(this.el);
 			};
@@ -110,11 +123,6 @@
 			this.init();
 			
 		};
-
-		// enemies.push( new Enemy() );
-
-		// var enemy = new Enemy();
-
 
 		var spaceShip = {
 			getCurrPos: function() {
@@ -161,9 +169,17 @@
 			spaceShip.shoot();
 		});
 
+		var enemyLoop = setInterval(function() {
+			enemies.push( new Enemy() );
+		}, 1000);
+
 		var loop = setInterval(function(){
 
-			if (enemies.length > 0) enemies[0].moveTowardsSpaceship();
+			if (enemies.length > 0) {
+				_(enemies).each( function( enemy, key, enemies ) {
+					enemy.moveTowardsSpaceship();
+				});
+			}
 
 		    // change 12 to alter damping higher is slower
 		    xp += ((mouseX/5) - xp) / delay;
