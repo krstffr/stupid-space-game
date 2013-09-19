@@ -53,7 +53,6 @@
 			mouseX = 0,
 			newTopCosNum = 0,
 			newLeftCosNum = 0,
-			enemyCosNum = 0,
 			newPos = { top: 0},
 			xp = 0, 
 			yp = 0,
@@ -62,7 +61,7 @@
 			leftEdge = $(document).width()-100,
 			playFieldHeight = $(document).height()-30;
 			rocketTopSpeed = 25,
-			enemies = [],
+			enemies = {},
 			uniqueEnemyCounter = 0;
 
 		function Enemy () {
@@ -77,24 +76,18 @@
 			this.randLeftMoveSpeed = Math.floor( Math.random()*3 )+1;
 
 			this.kill = function() {
-				console.log('killed '+this.enemyId);
 				delete enemies[this.enemyId];
-				enemies = _.compact(enemies);
-				console.log(enemies);
-				// THIS DON'T WORK!!!
 				this.el.fadeOut(250).remove();
-				// REMOVE FROM ARRAY! OR IT JUST KEEPS GROWING! = more cpu
-				// OK???
 			};
 
 			this.moveTowardsSpaceship = function() {
 				// this.newPos.top = parseInt(this.elItWantsToDestroy().css('top'));
 				this.randCosNum += 0.02;
-				this.newPos.left += this.randLeftMoveSpeed;
+				this.newPos.right += this.randLeftMoveSpeed;
 				this.newPos.top += (parseInt(this.elItWantsToDestroy().css('top')) - this.newPos.top) / delay;
 				this.newPos.top = this.newPos.top + ( Math.cos(this.randCosNum) * this.randCosMultiplier );
-				this.el.css({top: this.newPos.top, right: this.newPos.left + 1});
-				if (this.newPos.left > leftEdge) this.kill();
+				this.el.css({top: this.newPos.top, right: this.newPos.right + 1});
+				if (this.newPos.right > leftEdge) this.kill();
 			};
 
 			this.hitBox = function() {
@@ -109,7 +102,7 @@
 
 			this.createStartPos = function() {
 				var topPos = Math.floor( Math.random()*playFieldHeight );
-				return { top: topPos, right: '5%' };
+				return { top: topPos, right: 0 };
 			};
 
 			this.create = function() {
@@ -119,7 +112,8 @@
 
 				this.el.attr('id', 'enemy-'+enemyId);
 				this.enemyId = enemyId;
-				this.el.css( this.createStartPos() );
+				this.newPos = this.createStartPos();
+				this.el.css( this.newPos );
 
 				playField.append(this.el);
 			};
@@ -173,29 +167,35 @@
 		$(document).on('mousemove', function(e){
 		   mouseX = e.pageX;
 		   mouseY = e.pageY; 
-		}).on('click', function(e) {
-			spaceShip.shoot();
+		}).on('mousedown', function(event) {
+		    switch (event.which) {
+		        case 1:
+		        	spaceShip.shoot();
+		            break;
+		        case 2:
+		        	enemies[uniqueEnemyCounter] = new Enemy();
+		        	// enemies.push( new Enemy() );
+		            break;
+		        case 3:
+		            break;
+		        default:
+		            alert('You have a strange mouse');
+		    }
 		});
-
-		var enemyLoop = setInterval(function() {
-			enemies.push( new Enemy() );
-		}, 500);
 
 		var loop = setInterval(function(){
 
-			if (enemies.length > 0) {
+			if (!_(enemies).isEmpty()) {
 				_(enemies).each( function( enemy, key, enemies ) {
 					enemy.moveTowardsSpaceship();
 				});
 			}
 
-		    // change 12 to alter damping higher is slower
 		    xp += ((mouseX/5) - xp) / delay;
 		    yp += (mouseY - yp) / delay;
 
 		    newTopCosNum = newTopCosNum+0.03;
 		    newLeftCosNum = newLeftCosNum+0.012;
-		    enemyCosNum = enemyCosNum+0.02;
 
 		    newTopPos = yp + ( Math.cos(newTopCosNum) * 50 );
 		    newLeftPos = xp + ( Math.cos(newLeftCosNum) * 30 );
