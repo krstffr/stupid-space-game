@@ -211,10 +211,16 @@
 					leftPos = $('#rocket-count').offset().left;
 				return { top: topPos, left: leftPos };
 			},
-			shoot: function() {
+			shoot: function(clickX, clickY) {
 				if (this.shotExists()) return false;
+
 				var currPos = this.getCurrPos(),
-					newDiv = $('<div class="shot">').css({position: 'absolute'}).text('ROCKET').css(currPos);
+					deltaY = this.getCurrPos().top - clickY,
+					deltaX = this.getCurrPos().left - clickX,
+					newDiv = $('<div class="shot">').css({position: 'absolute'}).text('ROCKET').css(currPos),
+					degress = Math.atan2(deltaY, deltaX) * 180 / Math.PI ;
+
+					alert('Shoot rocket @ '+degress+' degress!');
 
 				playField.append(newDiv);
 
@@ -250,7 +256,7 @@
 		}).on('mousedown', function(event) {
 		    switch (event.which) {
 		        case 1:
-		        	spaceShip.shoot();
+		        	spaceShip.shoot(mouseX, mouseY);
 		            break;
 		        case 2:
 		        	enemies[uniqueEnemyCounter] = new Enemy();
