@@ -169,11 +169,53 @@
 			
 		};
 
+		function Rocket(x, y, speed, angle, acceleration, maxSpeed, range){
+			this.x = x;
+			this.y = y;
+			this.speed = speed;
+			this.angle = angle;
+			this.acceleration = acceleration || 1.05;
+			this.maxSpeed = maxSpeed || 25;
+			this.range = range || 800;
+			this.dead = false;
+			this.travelled = 0;
+		}
+	
+		//update rocket independent of rendering method
+		Rocket.prototype.update = function(){        
+	        // calculate the vector (vx, vy) that represents the velocity
+	        var angleInRadians = this.angle*(Math.PI/180);
+
+	        var currentSpeed = this.speed >= this.maxSpeed ? this.speed : this.speed*= this.acceleration;
+			var vx = currentSpeed * Math.cos(angleInRadians);
+			var vy = currentSpeed * Math.sin(angleInRadians);
+			
+			//pythagoras to calculate travelled distance
+			this.travelled += Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+			
+			//set dead if range is reached
+			if (this.travelled >= this.range) {
+				this.dead = true;
+			}
+
+	        // move the bullet 
+			this.x += vx;
+			this.y += vy;		
+		}
+
+		//TODO: Separate drawing function that deals with the actual drawing
+		// maybe have each game object inherit from a game entity class which has update and draw methods?
+		Rocket.prototype.draw = function() {
+
+		}
+
 		var spaceShip = {
 			el: $("#follower"),
 			shotLeftPos: false,
 			shotSpeed: shotSpeed,
 			kills: 0,
+			rockets: [],
+			maxBurst: 1, 
 			kill: function() {
 				this.el.fadeOut(250).remove();
 				var test = alert('You suck! But you did kill '+this.kills+' alien enemies.');
@@ -197,12 +239,17 @@
 			},
 			moveRockets: function() {
 
-			    if (this.shotExists()) {
+			    if (this.rockets.length) {
 			    	if (!this.shotLeftPos) this.shotLeftPos = parseInt( this.getCurrentShot().css('left') );
-			    	this.shotLeftPos += this.shotSpeed;
-			    	if (this.shotSpeed < rocketTopSpeed) this.shotSpeed *= 1.05;
-			    	if (this.shotLeftPos > leftEdge) this.destroyShot();
-			    	this.getCurrentShot().css({left: this.shotLeftPos});
+			    	for (var i = 0; i < this.rockets.length; i++) {
+			    		this.rockets[i].update();
+			    		this.getCurrentShot().css({left: this.rockets[i].x, top: this.rockets[i].y});
+
+			    		if (this.rockets[i].dead) {
+			    			this.rockets.splice(i, 1);
+			    			this.destroyShot(); //maybe abstract this function away eventually as we move stuff the rendering stuff into the Rocket class
+			    		}
+			    	}
 			    }
 
 			},
@@ -212,20 +259,21 @@
 				return { top: topPos, left: leftPos };
 			},
 			shoot: function(clickX, clickY) {
-				if (this.shotExists()) return false;
-
+				if (this.rockets.length < this.maxBurst) {
 				var currPos = this.getCurrPos(),
-					deltaY = this.getCurrPos().top - clickY,
-					deltaX = this.getCurrPos().left - clickX,
+					deltaY = clickY - this.getCurrPos().top,
+					deltaX =  clickX - this.getCurrPos().left,
 					newDiv = $('<div class="shot">').css({position: 'absolute'}).text('ROCKET').css(currPos),
-					degress = Math.atan2(deltaY, deltaX) * 180 / Math.PI ;
+					degrees = Math.atan2(deltaY, deltaX) * (180/Math.PI);
 
-					alert('Shoot rocket @ '+degress+' degress!');
+					this.rockets.push(new Rocket(currPos.left, currPos.top, this.shotSpeed, degrees, 1.05, rocketTopSpeed ));
+					//console.log(degrees);
+					//alert('Shoot rocket @ '+degress+' degress!');
 
 				playField.append(newDiv);
 
 				this.el.find('#rocket-count').text('0');
-
+				}
 			},
 			shotHitBox: function() {
 				var shot = $('.shot'),
@@ -242,11 +290,17 @@
 			destroyShot: function() {
 				$('.shot').remove();
 				this.shotLeftPos = false;
-				this.shotSpeed = shotSpeed;
 				this.el.find('#rocket-count').text('1');
 			},
 			getCurrentShot: function() {
 				return $('.shot');
+			},
+
+			update: function() {
+				// Move spaceship
+			    spaceShip.move();
+			    // Move rockets if exists
+			    spaceShip.moveRockets();
 			}
 		};
 
@@ -284,12 +338,7 @@
 				});
 			}
 
-			// Move spaceship
-		    spaceShip.move();
-
-		    // Move rockets if exists
-		    spaceShip.moveRockets();
-
+			spaceShip.update();
 		    requestAnimationFrame(loop);
 		};
 
