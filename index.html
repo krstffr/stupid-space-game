@@ -88,7 +88,9 @@
 			rocketTopSpeed = 25,
 			enemies = {},
 			uniqueEnemyCounter = 0,
-			enemyGeneratorChecker = 0.9;
+			enemyGeneratorChecker = 0.9,
+			newFrame = 0,
+			yPos = 0;
 
 		function Enemy () {
 
@@ -172,7 +174,10 @@
 		var spaceShip = {
 			el: $("#follower"),
 			shotLeftPos: false,
+			shotTopPos: 0,
 			shotSpeed: shotSpeed,
+			shotDegrees: 0,
+			shotFrame: 0, //This def needs to be something smarter!!
 			kills: 0,
 			kill: function() {
 				this.el.fadeOut(250).remove();
@@ -199,10 +204,13 @@
 
 			    if (this.shotExists()) {
 			    	if (!this.shotLeftPos) this.shotLeftPos = parseInt( this.getCurrentShot().css('left') );
-			    	this.shotLeftPos += this.shotSpeed;
-			    	if (this.shotSpeed < rocketTopSpeed) this.shotSpeed *= 1.05;
+					this.shotTopPos += this.shotFrame * Math.sin( this.shotDegrees * (Math.PI / 180) );
+					this.shotLeftPos += this.shotFrame * Math.cos( this.shotDegrees * (Math.PI / 180) );
+			    	this.shotFrame++;
+			    	// this.shotLeftPos += this.shotSpeed;
+			    	// if (this.shotSpeed < rocketTopSpeed) this.shotSpeed *= 1.05;
 			    	if (this.shotLeftPos > leftEdge) this.destroyShot();
-			    	this.getCurrentShot().css({left: this.shotLeftPos});
+			    	this.getCurrentShot().css({left: this.shotLeftPos, top: this.shotTopPos});
 			    }
 
 			},
@@ -215,12 +223,14 @@
 				if (this.shotExists()) return false;
 
 				var currPos = this.getCurrPos(),
-					deltaY = this.getCurrPos().top - clickY,
-					deltaX = this.getCurrPos().left - clickX,
+					deltaY = clickY - this.getCurrPos().top,
+					deltaX = clickX - this.getCurrPos().left,
 					newDiv = $('<div class="shot">').css({position: 'absolute'}).text('ROCKET').css(currPos),
 					degress = Math.atan2(deltaY, deltaX) * 180 / Math.PI ;
 
-					alert('Shoot rocket @ '+degress+' degress!');
+				this.shotTopPos = currPos.top,
+				this.shotDegrees = degress;
+				this.shotFrame = 0;
 
 				playField.append(newDiv);
 
