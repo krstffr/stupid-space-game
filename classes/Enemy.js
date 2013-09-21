@@ -64,7 +64,7 @@ function Enemy () {
 	this.update = function() {
 		this.moveTowardsSpaceship();
 		this.checkIfHitPlayer();
-		this.moveRockets();
+		this.inheritedUpdates();
 	};
 
 	this.init = function() {

@@ -35,5 +35,9 @@ var asShooter = function (options) {
 			}
 		}
 	};
+	this.inheritedUpdates = function() {
+		// Move rockets if exists
+		this.moveRockets();
+	};
 	return this;
 }

@@ -38,13 +38,12 @@ function SpaceShip () {
 	this.getCurrPos = GLOBALgetCurrPosMethod;
 	this.hitBox = GLOBALhitBox;
 
-
 	this.update = function() {
 		// Move spaceship
-		spaceShip.move();
-		// Move rockets if exists
-		spaceShip.moveRockets();
+		this.move();
+		this.inheritedUpdates();
 	};
 }
 
 asShooter.call( SpaceShip.prototype );
+testMixin.call( SpaceShip.prototype );
