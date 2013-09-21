@@ -9,9 +9,15 @@ function SpaceShip () {
 	this.maxBurst = 2;
 
 	this.kill = function() {
-		this.el.fadeOut(250).remove();
-		var test = alert('You suck! But you did kill '+this.kills+' alien enemies.');
-		window.location = 'index.html';
+		this.el.fadeOut(250, function() {
+			$(this).remove();
+			// Here something nice needs to happen.
+			window.location = 'index.html';
+		});
+
+		// Removed these cause they were really annoying
+		// var test = alert('You suck! But you did kill '+this.kills+' alien enemies.');
+		
 	};
 	this.addKill = function() {
 		this.kills += 1;
@@ -29,13 +35,8 @@ function SpaceShip () {
 
 		this.el.css({ left: Math.floor(newLeftPos), top: Math.floor(newTopPos) });
 	};
-	this.moveRockets = GLOBALmoveRockets;
 	this.getCurrPos = GLOBALgetCurrPosMethod;
-	this.shoot = GLOBALshootMethod;
 	this.hitBox = GLOBALhitBox;
-	this.shotExists = function() {
-		return this.rockets.length > 0;
-	};
 
 
 	this.update = function() {
@@ -45,3 +46,5 @@ function SpaceShip () {
 		spaceShip.moveRockets();
 	};
 }
+
+asShooter.call( SpaceShip.prototype );

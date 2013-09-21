@@ -18,8 +18,6 @@ function Enemy () {
 		this.el.fadeOut(250).remove();
 	};
 
-	this.shoot = GLOBALshootMethod;
-	this.moveRockets = GLOBALmoveRockets;
 	this.getCurrPos = GLOBALgetCurrPosMethod;
 
 	this.moveTowardsSpaceship = function() {
@@ -76,3 +74,5 @@ function Enemy () {
 	this.init();
 	
 }
+
+asShooter.call( Enemy.prototype );
