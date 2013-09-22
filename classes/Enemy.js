@@ -9,9 +9,6 @@ function Enemy () {
 	this.randCosNum = Math.floor(Math.random()*10) / 100;
 	this.randCosMultiplier = Math.floor(Math.random()*2)+1;
 	this.randLeftMoveSpeed = Math.floor( Math.random()*3 )+1;
-	this.rockets = [];
-	this.maxBurst = 1;
-	this.shotSpeed = 1;
 
 	this.kill = function() {
 		delete enemies[this.enemyId];
@@ -32,10 +29,7 @@ function Enemy () {
 	this.hitBox = GLOBALhitBox;
 
 	this.checkIfHitPlayer = function() {
-		if (spaceShip.hitBox().pos.left + spaceShip.hitBox().size.width > this.hitBox().pos.left && spaceShip.hitBox().pos.top + spaceShip.hitBox().size.height > this.hitBox().pos.top && spaceShip.hitBox().pos.top < this.hitBox().pos.top + this.hitBox().size.height) {
-			spaceShip.kill();
-			this.kill();
-		}
+		// redo this…
 	};
 
 	this.elItWantsToDestroy = function() {

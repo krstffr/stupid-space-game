@@ -3,10 +3,8 @@ function SpaceShip () {
 	var that = this;
 	this.el = $("#follower");
 	this.rocketEl = $('#rocket-count');
-	this.shotSpeed = shotSpeed;
 	this.kills = 0;
-	this.rockets = [];
-	this.maxBurst = 2;
+	
 
 	this.kill = function() {
 		this.el.fadeOut(250, function() {

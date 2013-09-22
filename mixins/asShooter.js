@@ -3,20 +3,29 @@ var globalShotCounter = 0;
 
 // This will be a shooter-mixin for use of all objects which shoot in the game.
 var asShooter = function (options) {
-	this.shoot = function(targetX, targetY) {
+
+	this.shotSpeed = 1;
+	this.rockets = [];
+	this.maxBurst = 1;
+
+	// options are:
+	// x = where the rocket will head x
+	// y = where the rocket will head y
+	// toKillTargets = array of targets to kill
+	this.shoot = function(options) {
 		if (this.rockets.length < this.maxBurst) {
 			// Ehm this is for assigning a unique ID to every shot, there probably is a cleaner way
 			globalShotCounter++;
 			var currPos = this.getCurrPos(),
-			deltaY = targetY - currPos.top,
-			deltaX =  targetX - currPos.left,
+			deltaY = options.y - currPos.top,
+			deltaX =  options.x - currPos.left,
 			uniqueID = 'shot-num-'+globalShotCounter,
 			degrees = Math.atan2(deltaY, deltaX) * (180/Math.PI),
 			newDiv = $('<div class="shot">').attr('id', uniqueID).css({position: 'absolute'}).text('ROCKET').css(currPos);
 			
 			playField.append(newDiv);
 
-			this.rockets.push(new Rocket(currPos.left, currPos.top, this.shotSpeed, degrees, 1.05, 25, 500, uniqueID ));
+			this.rockets.push(new Rocket( currPos.left, currPos.top, this.shotSpeed, degrees, 1.05, 25, 1500, uniqueID, options.toKillTargets ));
 
 		}
 	};

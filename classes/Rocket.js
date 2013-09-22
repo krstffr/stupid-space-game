@@ -1,4 +1,4 @@
-function Rocket(x, y, speed, angle, acceleration, maxSpeed, range, uniqueID){
+function Rocket(x, y, speed, angle, acceleration, maxSpeed, range, uniqueID, toKillTargets){
 	this.x = x;
 	this.y = y;
 	this.speed = speed;
@@ -10,6 +10,7 @@ function Rocket(x, y, speed, angle, acceleration, maxSpeed, range, uniqueID){
 	this.travelled = 0;
 	this.uniqueID = uniqueID;
 	this.el = $('#'+uniqueID);
+	this.toKillTargets = toKillTargets;
 }
 
 //update rocket independent of rendering method
@@ -17,6 +18,7 @@ Rocket.prototype.update = function() {
     // calculate the vector (vx, vy) that represents the velocity
     var angleInRadians = this.angle*(Math.PI/180);
 
+    console.log(this.speed);
     var currentSpeed = this.speed >= this.maxSpeed ? this.speed : this.speed*= this.acceleration;
     var vx = currentSpeed * Math.cos(angleInRadians);
     var vy = currentSpeed * Math.sin(angleInRadians);
@@ -42,9 +44,18 @@ Rocket.prototype.destroyShot = function() {
 };
 
 Rocket.prototype.checkIfHitSomething = function() {
-	if (spaceShip.shotExists()) {
-		// Do hitbox logic
-	}
+	var thisRocket = this,
+	thisRocketHitbox = thisRocket.hitBox();
+
+	_(thisRocket.toKillTargets).each( function( enemy ) {
+		// "Cleanish" solution found here: http://gamemath.com/2011/09/detecting-whether-two-boxes-overlap/
+		if (thisRocketHitbox.max.x < enemy.hitBox().min.x) return false; // a is left of b
+		if (thisRocketHitbox.min.x > enemy.hitBox().max.x) return false; // a is right of b
+		if (thisRocketHitbox.max.y < enemy.hitBox().min.y) return false; // a is above b
+		if (thisRocketHitbox.min.y > enemy.hitBox().max.y) return false; // a is below b
+		enemy.kill();
+		thisRocket.destroyShot();
+	});
 };
 
 Rocket.prototype.hitBox = GLOBALhitBox;

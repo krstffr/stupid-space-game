@@ -111,7 +111,7 @@
 		}).on('mousedown', function(event) {
 		    switch (event.which) {
 		        case 1:
-		        	spaceShip.shoot(mouseX, mouseY);
+		        	spaceShip.shoot({x: mouseX, y: mouseY, toKillTargets: enemies});
 		            break;
 		        case 2:
 		        	enemies[uniqueEnemyCounter] = new Enemy();
@@ -122,11 +122,11 @@
 
 		var enemyGenerator = setInterval(function() {
 			var checkAgainst = Math.random();
-			if (checkAgainst > enemyGeneratorChecker) enemies[uniqueEnemyCounter] = new Enemy();
+			// if (checkAgainst > enemyGeneratorChecker) enemies[uniqueEnemyCounter] = new Enemy();
 			enemyGeneratorChecker = enemyGeneratorChecker*0.99;
 			if (!_(enemies).isEmpty()) {
 				_(enemies).each( function( enemy, key, enemies ) {
-					enemy.shoot( spaceShip.getCurrPos().left, spaceShip.getCurrPos().top );
+					enemy.shoot( {x: spaceShip.getCurrPos().left, y: spaceShip.getCurrPos().top, toKillTargets: [spaceShip] } );
 				});
 			}
 		}, 1000);
