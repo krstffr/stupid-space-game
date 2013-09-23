@@ -1,0 +1,23 @@
+body {
+	background: #000;
+}
+
+#follower{
+  position : absolute;
+  background-color : #cfc;
+  color : #000;
+  padding : 10px;
+}
+
+.shot {
+	background: #f00;
+}
+
+#rocket-count {
+	background: #f00;
+}
+
+.enemy {
+	position: absolute;
+	background: #0f0;
+}
