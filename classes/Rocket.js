@@ -18,7 +18,6 @@ Rocket.prototype.update = function() {
     // calculate the vector (vx, vy) that represents the velocity
     var angleInRadians = this.angle*(Math.PI/180);
 
-    console.log(this.speed);
     var currentSpeed = this.speed >= this.maxSpeed ? this.speed : this.speed*= this.acceleration;
     var vx = currentSpeed * Math.cos(angleInRadians);
     var vy = currentSpeed * Math.sin(angleInRadians);

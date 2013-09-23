@@ -1,72 +1,69 @@
-function Enemy () {
+var Enemy = ring.create([Shooter], {
 
-	var that = this;
+	enemyId: 0,
+	newPos: { top: 0, left: 0},
+	randCosNum: Math.floor(Math.random()*10) / 100,
+	randCosMultiplier: Math.floor(Math.random()*2)+1,
+	randLeftMoveSpeed: Math.floor( Math.random()*3 )+1,
 
-	this.el = $('<div>').addClass('enemy').text('enemy!');
-	this.rocketEl = this.el;
-	this.enemyId = 0;
-	this.newPos = { top: 0, left: 0};
-	this.randCosNum = Math.floor(Math.random()*10) / 100;
-	this.randCosMultiplier = Math.floor(Math.random()*2)+1;
-	this.randLeftMoveSpeed = Math.floor( Math.random()*3 )+1;
-
-	this.kill = function() {
+	kill: function() {
 		delete enemies[this.enemyId];
 		this.el.fadeOut(250).remove();
-	};
+	},
 
-	this.getCurrPos = GLOBALgetCurrPosMethod;
+	getCurrPos: GLOBALgetCurrPosMethod,
 
-	this.moveTowardsSpaceship = function() {
+	moveTowardsSpaceship: function() {
 		this.randCosNum += 0.02;
 		this.newPos.right += this.randLeftMoveSpeed;
 		this.newPos.top += (parseInt(this.elItWantsToDestroy().css('top'), 10) - this.newPos.top) / delay;
 		this.newPos.top = this.newPos.top + ( Math.cos(this.randCosNum) * this.randCosMultiplier );
 		this.el.css({top: this.newPos.top, right: this.newPos.right + 1});
 		if (this.newPos.right > leftEdge) this.kill();
-	};
+	},
 
-	this.hitBox = GLOBALhitBox;
+	hitBox: GLOBALhitBox,
 
-	this.checkIfHitPlayer = function() {
+	checkIfHitPlayer: function() {
 		// redo this…
-	};
+	},
 
-	this.elItWantsToDestroy = function() {
+	elItWantsToDestroy: function() {
 		if (typeof spaceShip !== 'undefined')
 			return spaceShip.el;
-	};
+	},
 
-	this.createStartPos = function() {
+	createStartPos: function() {
 		var topPos = Math.floor( Math.random()*playFieldHeight );
 		return { top: topPos, right: 0 };
-	};
+	},
 
-	this.create = function() {
+	create: function() {
 		var enemyId = uniqueEnemyCounter;
 
 		uniqueEnemyCounter++;
 
+
+		this.el = $('<div>').addClass('enemy').text('enemy!');
 		this.el.attr('id', 'enemy-'+enemyId);
 		this.enemyId = enemyId;
 		this.newPos = this.createStartPos();
 		this.el.css( this.newPos );
 
 		playField.append(this.el);
-	};
 
-	this.update = function() {
+		this.rocketEl = this.el;
+	},
+
+	update: function() {
 		this.moveTowardsSpaceship();
 		this.checkIfHitPlayer();
-		this.inheritedUpdates();
-	};
+		if (this.$super !== undefined) this.$super();
+		// this.inheritedUpdates();
+	},
 
-	this.init = function() {
+	init: function() {
 		this.create();
-	};
-
-	this.init();
+	}
 	
-}
-
-asShooter.call( Enemy.prototype );
+});

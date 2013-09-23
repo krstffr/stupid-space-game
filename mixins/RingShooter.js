@@ -2,17 +2,17 @@
 var globalShotCounter = 0;
 
 // This will be a shooter-mixin for use of all objects which shoot in the game.
-var asShooter = function (options) {
+var Shooter = ring.create({
 
-	this.shotSpeed = 1;
-	this.rockets = [];
-	this.maxBurst = 1;
+	shotSpeed: 1,
+	rockets: [],
+	maxBurst: 1,
 
 	// options are:
 	// x = where the rocket will head x
 	// y = where the rocket will head y
 	// toKillTargets = array of targets to kill
-	this.shoot = function(options) {
+	shoot: function(options) {
 		if (this.rockets.length < this.maxBurst) {
 			// Ehm this is for assigning a unique ID to every shot, there probably is a cleaner way
 			globalShotCounter++;
@@ -28,11 +28,11 @@ var asShooter = function (options) {
 			this.rockets.push(new Rocket( currPos.left, currPos.top, this.shotSpeed, degrees, 1.05, 25, 1500, uniqueID, options.toKillTargets ));
 
 		}
-	};
-	this.shotExists = function() {
+	},
+	shotExists: function() {
 		return this.rockets.length > 0;
-	};
-	this.moveRockets = function() {
+	},
+	moveRockets: function() {
 		if (this.rockets.length) {
 			for (var i = 0; i < this.rockets.length; i++) {
 				this.rockets[i].update();
@@ -43,10 +43,10 @@ var asShooter = function (options) {
 				}
 			}
 		}
-	};
-	this.inheritedUpdates = function() {
+	},
+	update: function() {
 		// Move rockets if exists
+		if (this.$super !== undefined) this.$super();
 		this.moveRockets();
-	};
-	return this;
-}
+	}
+});

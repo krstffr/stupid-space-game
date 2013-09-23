@@ -16,14 +16,14 @@
 		<script src="classes/GLOBALSTUFFNEEDSNEWNAME.js"></script>
 		
 		<!-- Mixins, should they be placed in this folder or not? -->
-		<script src="mixins/asShooter.js"></script>
-		<script src="mixins/testMixin.js"></script>
+		<script src="mixins/RingShooter.js"></script>
+		<script src="mixins/RingTestMixin.js"></script>
 		
 	
 		<!-- Should we call the folder classes (as they're not "really" classes?) -->
-		<script src="classes/SpaceShip.js"></script>
+		<script src="classes/RingSpaceShip.js"></script>
 		<script src="classes/Rocket.js"></script>
-		<script src="classes/Enemy.js"></script>
+		<script src="classes/RingEnemy.js"></script>
 		
 	</head>
 	<body>
@@ -82,6 +82,7 @@
 			uniqueEnemyCounter = 0,
 			enemyGeneratorChecker = 0.9;
 
+		// DAMN THIS IS UGLY CODE
 		var spaceShip = new SpaceShip();
 
 		$(document).on('mousemove', function(e){
@@ -101,8 +102,10 @@
 
 		var enemyGenerator = setInterval(function() {
 			var checkAgainst = Math.random();
-			// if (checkAgainst > enemyGeneratorChecker) enemies[uniqueEnemyCounter] = new Enemy();
-			enemyGeneratorChecker = enemyGeneratorChecker*0.99;
+			if (checkAgainst > enemyGeneratorChecker) {
+				enemies[uniqueEnemyCounter] = new Enemy();
+			}
+			enemyGeneratorChecker = enemyGeneratorChecker*0.9;
 			if (!_(enemies).isEmpty()) {
 				_(enemies).each( function( enemy, key, enemies ) {
 					enemy.shoot( {x: spaceShip.getCurrPos().left, y: spaceShip.getCurrPos().top, toKillTargets: [spaceShip] } );
